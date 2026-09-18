@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>SalesWise - توقع الطلب على المخزون</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            padding-top: 50px;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            width: 350px;
+        }
+        h2 { text-align: center; color: #333; }
+        label { display: block; margin-top: 15px; font-weight: bold; }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            width: 100%;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #2d6cdf;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover { background-color: #1b4fb8; }
+        #result {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2d6cdf;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>توقع الكمية المطلوبة</h2>
+
+        <label>الفئة (Sub-Category)</label>
+        <select id="sub_category">
+            <option>Chairs</option>
+            <option>Phones</option>
+            <option>Binders</option>
+            <option>Storage</option>
+            <option>Tables</option>
+            <option>Furnishings</option>
+            <option>Paper</option>
+            <option>Accessories</option>
+        </select>
+
+        <label>الشهر</label>
+        <input type="number" id="month" min="1" max="12" value="3">
+
+        <label>السنة</label>
+        <input type="number" id="year" value="2018">
+
+        <label>متوسط الخصم (0 إلى 1)</label>
+        <input type="number" id="avg_discount" step="0.01" value="0.1">
+
+        <label>هل كان فيه خصم؟ (1 = نعم, 0 = لا)</label>
+        <input type="number" id="had_discount" min="0" max="1" value="1">
+
+        <label>كمية الشهر اللي فات (Lag)</label>
+        <input type="number" id="lag_1" value="40">
+
+        <label>متوسط آخر 3 شهور</label>
+        <input type="number" id="rolling_3" value="35">
+
+        <button onclick="predict()">توقع الكمية</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function predict() {
+            const data = {
+                sub_category: document.getElementById('sub_category').value,
+                month: parseInt(document.getElementById('month').value),
+                year: parseInt(document.getElementById('year').value),
+                avg_discount: parseFloat(document.getElementById('avg_discount').value),
+                had_discount: parseInt(document.getElementById('had_discount').value),
+                lag_1: parseFloat(document.getElementById('lag_1').value),
+                rolling_3: parseFloat(document.getElementById('rolling_3').value)
+            };
+
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            document.getElementById('result').innerText =
+                "الكمية المتوقعة: " + result.predicted_quantity + " قطعة";
+        }
+    </script>
+</body>
+</html>
